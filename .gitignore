@@ -1,3 +1,6 @@
 .DS_Store
 action/mask_rcnn_coco.h5
 action/data
+action/keras_retinanet
+emotion/images
+*.h5
