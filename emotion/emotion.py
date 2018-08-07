@@ -35,6 +35,9 @@ class Emotion:
         return True
     
     def predict(self, face):
+        face = np.expand_dims(face, axis=0)
+        face[:] = np.max(face, axis=-1, keepdims=1)/2+np.min(face, axis=-1, keepdims=1)/2
+
         model_predict = self.model.predict([face])
         result = {}
         for i in model_predict[0].argsort()[::-1]:

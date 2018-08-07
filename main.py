@@ -12,7 +12,7 @@ def crop_and_resize(image, position):
     """ Crop Function take path, x1, y1, x2, y2 then give back cropped photo """
     posx1, posy1, posx2, posy2 = position
     cropped = image[posy1: posy1 + abs(posy2 - posy1), posx1: posx1 + abs(posx2 - posx1)]
-    cropped = cv2.resize(cropped, dsize=(224, 224))
+    cropped = cv2.resize(cropped, (224, 224))
     return cropped
 
 def main():
@@ -22,18 +22,18 @@ def main():
     factor = 0.709  # scale factor
 
     print('Creating networks and loading parameters')
-    with tf.Graph().as_default():
-        sess = tf.Session()
-        with sess.as_default():
-            pnet, rnet, onet = align.detect_face.create_mtcnn(sess, None)
-
     # with tf.Graph().as_default():
-    #     gpu_options = tf.GPUOptions(
-    #         per_process_gpu_memory_fraction=0)
-    #     sess = tf.Session(config=tf.ConfigProto(
-    #         gpu_options=gpu_options, log_device_placement=False))
+    #     sess = tf.Session()
     #     with sess.as_default():
     #         pnet, rnet, onet = align.detect_face.create_mtcnn(sess, None)
+
+    with tf.Graph().as_default():
+        gpu_options = tf.GPUOptions(
+            per_process_gpu_memory_fraction=0)
+        sess = tf.Session(config=tf.ConfigProto(
+            gpu_options=gpu_options, log_device_placement=False))
+        with sess.as_default():
+            pnet, rnet, onet = align.detect_face.create_mtcnn(sess, None)
 
     # Load emotion
     emotion = em.Emotion()
@@ -48,7 +48,7 @@ def main():
         cam_status, frame = capture.read()
         if not cam_status:
             print(cam_status)
-            break
+            continue
 
         if count == 0:
             img = frame
@@ -62,7 +62,7 @@ def main():
 
             # Predict emotion
             face = crop_and_resize(frame, (face_position[0], face_position[1], face_position[2], face_position[3]))
-            face = np.expand_dims(face, axis=0)
+            # face = np.expand_dims(face, axis=0)
 
             emotion_result = emotion.predict(face)
             emotion_max = max(emotion_result, key=emotion_result.get)
