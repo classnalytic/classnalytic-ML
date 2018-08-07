@@ -4,6 +4,16 @@ import keras
 import cv2
 import numpy as np
 import align.detect_face
+# from PIL import Image
+
+import emotion as em
+
+def crop_and_resize(image, position):
+    """ Crop Function take path, x1, y1, x2, y2 then give back cropped photo """
+    posx1, posy1, posx2, posy2 = position
+    cropped = image[posy1: posy1 + abs(posy2 - posy1), posx1: posx1 + abs(posx2 - posx1)]
+    cropped = cv2.resize(cropped, dsize=(224, 224))
+    return cropped
 
 def main():
     # Detect Face factor
@@ -17,17 +27,21 @@ def main():
         with sess.as_default():
             pnet, rnet, onet = align.detect_face.create_mtcnn(sess, None)
 
-    with tf.Graph().as_default():
-        gpu_options = tf.GPUOptions(
-            per_process_gpu_memory_fraction=0)
-        sess = tf.Session(config=tf.ConfigProto(
-            gpu_options=gpu_options, log_device_placement=False))
-        with sess.as_default():
-            pnet, rnet, onet = align.detect_face.create_mtcnn(sess, None)
+    # with tf.Graph().as_default():
+    #     gpu_options = tf.GPUOptions(
+    #         per_process_gpu_memory_fraction=0)
+    #     sess = tf.Session(config=tf.ConfigProto(
+    #         gpu_options=gpu_options, log_device_placement=False))
+    #     with sess.as_default():
+    #         pnet, rnet, onet = align.detect_face.create_mtcnn(sess, None)
+
+    # Load emotion
+    emotion = em.Emotion()
+    emotion.load_weights("emotion/emotion3.h5")
 
     # Camera
     capture = cv2.VideoCapture(0)
-    frame_interval = 5
+    frame_interval = 1
     count = 0
 
     while True:
@@ -40,13 +54,24 @@ def main():
             img = frame
             bounding_boxes, _ = align.detect_face.detect_face(
                             img, minsize, pnet, rnet, onet, threshold, factor)
-            print(bounding_boxes.shape)
+            # print(bounding_boxes.shape)
 
-        # Draw rectangle at the face position
+        # Prediction and Draw rectangle
         for face_position in bounding_boxes:
             face_position = face_position.astype(int)
+
+            # Predict emotion
+            face = crop_and_resize(frame, (face_position[0], face_position[1], face_position[2], face_position[3]))
+            face = np.expand_dims(face, axis=0)
+
+            emotion_result = emotion.predict(face)
+            emotion_max = max(emotion_result, key=emotion_result.get)
+            face_emotion = "{} {:.5f}".format(emotion_max, emotion_result[emotion_max])
+
+            # Draw rectangle at the face position
             cv2.rectangle(frame, (face_position[0], face_position[1]), (
                             face_position[2], face_position[3]), (0, 255, 0), 2)
+            cv2.putText(frame, face_emotion, (face_position[0], face_position[1]-20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0))
 
         cv2.imshow('Webcam', frame)
 

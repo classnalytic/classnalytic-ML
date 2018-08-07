@@ -1,4 +1,4 @@
 {
-    "python.pythonPath": "/home/phongsathron/anaconda3/envs/tf/bin/python",
+    "python.pythonPath": "/home/phongsathron/anaconda3/bin/python3",
     "git.ignoreLimitWarning": true
 }
