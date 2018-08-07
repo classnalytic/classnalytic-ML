@@ -1,6 +1,7 @@
 import tensorflow as tf
 import keras
 
+import sys
 import cv2
 import numpy as np
 import align.detect_face
@@ -41,7 +42,12 @@ def main():
 
     # Camera
     capture = cv2.VideoCapture(0)
-    frame_interval = 1
+
+    if not capture:
+        print("Can't get image from webcam")
+        sys.exit(0)
+
+    frame_interval = 2
     count = 0
 
     while True:
@@ -56,13 +62,15 @@ def main():
                             img, minsize, pnet, rnet, onet, threshold, factor)
             # print(bounding_boxes.shape)
 
+        if bounding_boxes.shape[0] <= 0:
+            continue
+
         # Prediction and Draw rectangle
         for face_position in bounding_boxes:
             face_position = face_position.astype(int)
 
             # Predict emotion
             face = crop_and_resize(frame, (face_position[0], face_position[1], face_position[2], face_position[3]))
-            # face = np.expand_dims(face, axis=0)
 
             emotion_result = emotion.predict(face)
             emotion_max = max(emotion_result, key=emotion_result.get)

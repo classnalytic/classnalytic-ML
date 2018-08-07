@@ -16,12 +16,6 @@ def resnet_model(class_num):
     model.add(Dropout(0.5))
     model.add(Dense(class_num, activation='softmax'))
 
-    optimizer = optimizers.Adam(lr=0.01)
-
-    model.compile(loss='categorical_crossentropy',
-              optimizer=optimizer,
-              metrics=['accuracy'])
-
     return model
 
 class Emotion:
