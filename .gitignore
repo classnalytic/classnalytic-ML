@@ -4,3 +4,7 @@ action/data
 action/keras_retinanet
 emotion/images
 *.h5
+Machine\ Learning
+Machine.Learning.zip
+*.pyc
+models/facenet

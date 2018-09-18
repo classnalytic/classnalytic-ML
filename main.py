@@ -5,7 +5,6 @@ import sys
 import cv2
 import numpy as np
 import align.detect_face
-# from PIL import Image
 
 import emotion as em
 
@@ -38,7 +37,7 @@ def main():
 
     # Load emotion
     emotion = em.Emotion()
-    emotion.load_weights("emotion/emotion3.h5")
+    emotion.load_weights("models/emotion/emotion.h5")
 
     # Camera
     capture = cv2.VideoCapture(0)
@@ -47,41 +46,41 @@ def main():
         print("Can't get image from webcam")
         sys.exit(0)
 
-    frame_interval = 2
+    frame_interval = 3
     count = 0
 
     while True:
         cam_status, frame = capture.read()
         if not cam_status:
             print(cam_status)
-            continue
+            break
 
         if count == 0:
             img = frame
-            bounding_boxes, _ = align.detect_face.detect_face(
-                            img, minsize, pnet, rnet, onet, threshold, factor)
-            # print(bounding_boxes.shape)
+            bounding_boxes, _ = align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
 
-        if bounding_boxes.shape[0] <= 0:
-            continue
+            # if bounding_boxes.shape[0] <= 0:
+            #     continue
 
-        # Prediction and Draw rectangle
-        for face_position in bounding_boxes:
-            face_position = face_position.astype(int)
+            # Prediction and Draw rectangle
+            for face_position in bounding_boxes:
+                face_position = face_position.astype(int)
 
-            # Predict emotion
-            face = crop_and_resize(frame, (face_position[0], face_position[1], face_position[2], face_position[3]))
+                # Predict emotion
+                face = crop_and_resize(img, (face_position[0], face_position[1], face_position[2], face_position[3]))
 
-            emotion_result = emotion.predict(face)
-            emotion_max = max(emotion_result, key=emotion_result.get)
-            face_emotion = "{} {:.5f}".format(emotion_max, emotion_result[emotion_max])
+                emotion_result = emotion.predict(face)
+                emotion_max = max(emotion_result, key=emotion_result.get)
+                face_emotion = "{} {:.5f}".format(emotion_max, emotion_result[emotion_max])
 
-            # Draw rectangle at the face position
-            cv2.rectangle(frame, (face_position[0], face_position[1]), (
-                            face_position[2], face_position[3]), (0, 255, 0), 2)
-            cv2.putText(frame, face_emotion, (face_position[0], face_position[1]-20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0))
+                # Draw rectangle at the face position
+                cv2.rectangle(frame, (face_position[0], face_position[1]), (
+                                face_position[2], face_position[3]), (0, 255, 0), 2)
+                cv2.putText(frame, face_emotion, (face_position[0], face_position[1]-20), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0))
 
-        cv2.imshow('Webcam', frame)
+            cv2.imshow('Webcam', frame)
+        else:
+            pass
 
         count += 1
         if count >= frame_interval:
