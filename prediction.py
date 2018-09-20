@@ -13,13 +13,6 @@ import sklearn
 import emotion as em
 import os
 
-def crop_and_resize(image, position, size):
-    """ Crop Function take path, x1, y1, x2, y2 then give back cropped photo """
-    posx1, posy1, posx2, posy2 = position
-    cropped = image[posy1: posy1 + abs(posy2 - posy1), posx1: posx1 + abs(posx2 - posx1)]
-    cropped = cv2.resize(cropped, size)
-    return cropped
-
 # Detect Face factor
 minsize = 20  # minimum size of face
 threshold = [0.6, 0.7, 0.8]  # three steps's threshold
@@ -45,21 +38,18 @@ classifier_filename_exp = os.path.abspath("./models/facenet/20180402-114759/lfw_
 with open(classifier_filename_exp, 'rb') as infile:
     (model, class_names) = pickle.load(infile)
 
-def predict_all(img):
+def crop_and_resize(image, position, size):
+    """ Crop Function take path, x1, y1, x2, y2 then give back cropped photo """
+    posx1, posy1, posx2, posy2 = position
+    cropped = image[posy1: posy1 + abs(posy2 - posy1), posx1: posx1 + abs(posx2 - posx1)]
+    cropped = cv2.resize(cropped, size)
+    return cropped
+
+def predict_face(img, bounding_boxes=None, margin=44, image_size=(160, 160)):
     results = []
-    bounding_boxes, _ = align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
 
-    for face_position in bounding_boxes:
-        temp_result = {}
-        face_position = face_position.astype(int)
-        face_pos = (face_position[0], face_position[1], face_position[2], face_position[3])
-
-        # Predict Emotion
-        face = crop_and_resize(img, face_pos, (224, 224))
-        temp_result["face_location"] = list(map(int, face_pos))
-        temp_result["emotions"] = emotion.predict(face)
-
-        results += [temp_result]
+    if bounding_boxes is None:
+        bounding_boxes, _ = align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
 
     # Facenet Prediction
     with tf.Graph().as_default():
@@ -71,7 +61,6 @@ def predict_all(img):
             phase_train_placeholder = tf.get_default_graph().get_tensor_by_name("phase_train:0")
 
             nrof_faces = bounding_boxes.shape[0]
-            margin = 44
 
             img_size = np.asarray(img.shape)[0:2]
             img_list = [None] * nrof_faces
@@ -84,7 +73,7 @@ def predict_all(img):
                 bb[3] = np.minimum(det[3]+margin/2, img_size[0])
                 cropped = img[bb[1]:bb[3], bb[0]:bb[2], :]
                 aligned = misc.imresize(
-                    cropped, (160, 160), interp='bilinear')
+                    cropped, image_size, interp='bilinear')
                 prewhitened = facenet.prewhiten(aligned)
                 img_list[i] = prewhitened
             images = np.stack(img_list)
@@ -98,23 +87,68 @@ def predict_all(img):
             best_class_probabilities = predictions[np.arange(
                 len(best_class_indices)), best_class_indices]
 
-            index = 0            
+            index = 0
             for face_position in bounding_boxes:
-                temp_result = results[index]
                 face_position = face_position.astype(int)
                 face_pos = (face_position[0], face_position[1], face_position[2], face_position[3])
 
+                result = {}
+
                 if best_class_probabilities[index] > 0.75:
-                    temp_result["accuracy"] = best_class_probabilities[index]
-                    temp_result["name"] = class_names[best_class_indices[0]]
+                    result["accuracy"] = best_class_probabilities[index]
+                    result["name"] = class_names[best_class_indices[0]]
                     print("results => %s" %class_names[best_class_indices[0]])
                 else:
-                    temp_result["name"] = "Unknown"
+                    result["accuracy"] = "null"
+                    result["name"] = "Unknown"
                     print("Unknown")
 
-                results[index] = temp_result
                 index += 1
 
-    response = json.dumps(results)
-    print(response)
-    return response
+                results += [result]
+    return results
+
+def predict_emotion(img, bounding_boxes=None):
+    results = []
+
+    if bounding_boxes is None:
+        bounding_boxes, _ = align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
+
+    for face_position in bounding_boxes:
+        result = {}
+        face_position = face_position.astype(int)
+        face_pos = (face_position[0], face_position[1], face_position[2], face_position[3])
+
+        # Predict Emotion
+        face = crop_and_resize(img, face_pos, (224, 224))
+        result["emotions"] = emotion.predict(face)
+
+        results += [result]
+    return results
+
+def face_location(bounding_boxes):
+    results = []
+    for face_position in bounding_boxes:
+        result = {}
+        face_position = face_position.astype(int)
+        face_pos = (face_position[0], face_position[1], face_position[2], face_position[3])
+
+        # Predict Emotion
+        result["face_location"] = list(map(int, face_pos))
+
+        results += [result]
+    return results
+
+def predict_all(img):
+    results = []
+    bounding_boxes, _ = align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
+
+    face_loc = face_location(bounding_boxes)
+    face_reg = predict_face(img, bounding_boxes)
+    face_emotion = predict_emotion(img, bounding_boxes)
+
+    for i in range(len(face_loc)):
+        results += [{**face_loc[i], **face_reg[i], **face_emotion[i]}]
+
+    print(results)
+    return results

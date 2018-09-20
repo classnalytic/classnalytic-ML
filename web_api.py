@@ -1,7 +1,7 @@
 import cv2
 import os
 import numpy
-from flask import Flask, request, Response
+from flask import Flask, request, Response, jsonify
 import prediction
 
 app = Flask(__name__)
@@ -14,7 +14,7 @@ def predict():
     image_file.save(file_loc)
 
     img = cv2.imread(file_loc)
-    results = prediction.predict_all(img)
+    results = jsonify(prediction.predict_all(img))
 
     return results
 
