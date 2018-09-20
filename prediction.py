@@ -27,6 +27,12 @@ with tf.Graph().as_default():
     with sess.as_default():
         pnet, rnet, onet = align.detect_face.create_mtcnn(sess, None)
 
+        facenet.load_model(os.path.abspath("./models/facenet/20180402-114759/"))
+
+        images_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
+        embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
+        phase_train_placeholder = tf.get_default_graph().get_tensor_by_name("phase_train:0")
+
 # Load emotion
 emotion = em.Emotion()
 emotion.load_weights("models/emotion/emotion.h5")
@@ -50,60 +56,54 @@ def predict_face(img, bounding_boxes=None, margin=44, image_size=(160, 160)):
         bounding_boxes, _ = align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
 
     # Facenet Prediction
-    with tf.Graph().as_default():
-        with tf.Session() as sess:
-            facenet.load_model(os.path.abspath("./models/facenet/20180402-114759/"))
+    nrof_faces = bounding_boxes.shape[0]
+    if nrof_faces == 0:
+        return results
 
-            images_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
-            embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
-            phase_train_placeholder = tf.get_default_graph().get_tensor_by_name("phase_train:0")
+    img_size = np.asarray(img.shape)[0:2]
+    img_list = [None] * nrof_faces
+    for i in range(nrof_faces):
+        det = np.squeeze(bounding_boxes[i, 0:4])
+        bb = np.zeros(4, dtype=np.int32)
+        bb[0] = np.maximum(det[0]-margin/2, 0)
+        bb[1] = np.maximum(det[1]-margin/2, 0)
+        bb[2] = np.minimum(det[2]+margin/2, img_size[1])
+        bb[3] = np.minimum(det[3]+margin/2, img_size[0])
+        cropped = img[bb[1]:bb[3], bb[0]:bb[2], :]
+        aligned = misc.imresize(
+            cropped, image_size, interp='bilinear')
+        prewhitened = facenet.prewhiten(aligned)
+        img_list[i] = prewhitened
+    images = np.stack(img_list)
 
-            nrof_faces = bounding_boxes.shape[0]
+    feed_dict = {images_placeholder: images,
+                phase_train_placeholder: False}
+    emb = sess.run(embeddings, feed_dict=feed_dict)
 
-            img_size = np.asarray(img.shape)[0:2]
-            img_list = [None] * nrof_faces
-            for i in range(nrof_faces):
-                det = np.squeeze(bounding_boxes[i, 0:4])
-                bb = np.zeros(4, dtype=np.int32)
-                bb[0] = np.maximum(det[0]-margin/2, 0)
-                bb[1] = np.maximum(det[1]-margin/2, 0)
-                bb[2] = np.minimum(det[2]+margin/2, img_size[1])
-                bb[3] = np.minimum(det[3]+margin/2, img_size[0])
-                cropped = img[bb[1]:bb[3], bb[0]:bb[2], :]
-                aligned = misc.imresize(
-                    cropped, image_size, interp='bilinear')
-                prewhitened = facenet.prewhiten(aligned)
-                img_list[i] = prewhitened
-            images = np.stack(img_list)
+    predictions = model.predict_proba(emb)
+    best_class_indices = np.argmax(predictions, axis=1)
+    best_class_probabilities = predictions[np.arange(
+        len(best_class_indices)), best_class_indices]
 
-            feed_dict = {images_placeholder: images,
-                        phase_train_placeholder: False}
-            emb = sess.run(embeddings, feed_dict=feed_dict)
+    index = 0
+    for face_position in bounding_boxes:
+        face_position = face_position.astype(int)
+        face_pos = (face_position[0], face_position[1], face_position[2], face_position[3])
 
-            predictions = model.predict_proba(emb)
-            best_class_indices = np.argmax(predictions, axis=1)
-            best_class_probabilities = predictions[np.arange(
-                len(best_class_indices)), best_class_indices]
+        result = {}
 
-            index = 0
-            for face_position in bounding_boxes:
-                face_position = face_position.astype(int)
-                face_pos = (face_position[0], face_position[1], face_position[2], face_position[3])
+        if best_class_probabilities[index] > 0.75:
+            result["accuracy"] = best_class_probabilities[index]
+            result["name"] = class_names[best_class_indices[0]]
+            print("results => %s" %class_names[best_class_indices[0]])
+        else:
+            result["accuracy"] = "null"
+            result["name"] = "Unknown"
+            print("Unknown")
 
-                result = {}
+        index += 1
 
-                if best_class_probabilities[index] > 0.75:
-                    result["accuracy"] = best_class_probabilities[index]
-                    result["name"] = class_names[best_class_indices[0]]
-                    print("results => %s" %class_names[best_class_indices[0]])
-                else:
-                    result["accuracy"] = "null"
-                    result["name"] = "Unknown"
-                    print("Unknown")
-
-                index += 1
-
-                results += [result]
+        results += [result]
     return results
 
 def predict_emotion(img, bounding_boxes=None):
@@ -111,6 +111,9 @@ def predict_emotion(img, bounding_boxes=None):
 
     if bounding_boxes is None:
         bounding_boxes, _ = align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
+
+    if bounding_boxes.shape[0] == 0:
+        return results
 
     for face_position in bounding_boxes:
         result = {}
@@ -126,6 +129,9 @@ def predict_emotion(img, bounding_boxes=None):
 
 def face_location(bounding_boxes):
     results = []
+    if bounding_boxes.shape[0] == 0:
+        return results
+
     for face_position in bounding_boxes:
         result = {}
         face_position = face_position.astype(int)
