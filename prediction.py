@@ -105,6 +105,7 @@ def predict_all(img):
                 face_pos = (face_position[0], face_position[1], face_position[2], face_position[3])
 
                 if best_class_probabilities[index] > 0.75:
+                    temp_result["accuracy"] = best_class_probabilities[index]
                     temp_result["name"] = class_names[best_class_indices[0]]
                     print("results => %s" %class_names[best_class_indices[0]])
                 else:
