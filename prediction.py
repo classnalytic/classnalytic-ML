@@ -1,12 +1,10 @@
-import tensorflow as tf
-# import keras
-
 import cv2
 import numpy as np
 import align.detect_face
 import json
 from scipy import misc
 
+import tensorflow as tf
 import facenet.facenet as facenet
 import pickle
 import sklearn
