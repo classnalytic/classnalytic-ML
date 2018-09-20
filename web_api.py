@@ -7,7 +7,7 @@ import prediction
 app = Flask(__name__)
 IMG_PATH = os.path.abspath("./temps")
 
-@app.route('/predict', methods=['POST'])
+@app.route('/api/predict', methods=['POST'])
 def predict():
     image_file = request.files["image"]
     file_loc = os.path.join(IMG_PATH, image_file.filename)
