@@ -1,0 +1,11 @@
+opencv-python
+tensorflow
+tensorflow-gpu
+keras
+numpy
+pandas
+sklearn
+scipy
+flask
+uwsgi
+pillow
