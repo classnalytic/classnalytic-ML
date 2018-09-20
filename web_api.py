@@ -17,9 +17,6 @@ def predict():
     results = prediction.predict_all(img)
 
     return results
-    # results = prediction.predict_all([img])
-
-    # return results
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
