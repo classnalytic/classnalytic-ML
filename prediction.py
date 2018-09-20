@@ -60,7 +60,6 @@ def predict_all(img):
         temp_result["emotions"] = emotion.predict(face)
 
         results += [temp_result]
-        print(results)
 
     # Facenet Prediction
     with tf.Graph().as_default():
@@ -113,7 +112,6 @@ def predict_all(img):
                     print("Unknown")
 
                 results[index] = temp_result
-                print(results)
                 index += 1
 
     response = json.dumps(results)
