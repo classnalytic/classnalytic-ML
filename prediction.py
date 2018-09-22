@@ -127,8 +127,12 @@ def predict_emotion(img, bounding_boxes=None):
         results += [result]
     return results
 
-def face_location(bounding_boxes):
+def face_location(img, bounding_boxes=None):
     results = []
+
+    if bounding_boxes is None:
+        bounding_boxes, _ = align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
+
     if bounding_boxes.shape[0] == 0:
         return results
 
@@ -147,7 +151,7 @@ def predict_all(img):
     results = []
     bounding_boxes, _ = align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
 
-    face_loc = face_location(bounding_boxes)
+    face_loc = face_location(img, bounding_boxes)
     face_reg = predict_face(img, bounding_boxes)
     face_emotion = predict_emotion(img, bounding_boxes)
 
