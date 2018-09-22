@@ -1,5 +1,6 @@
 import cv2
 import os
+import shutil
 import numpy
 import uuid
 from flask import Flask, request, Response, jsonify, url_for, send_file, abort
@@ -66,7 +67,31 @@ def temp_face(student_id, filename):
     else:
         abort(404)
 
-@app.route('/api/regis_face/select/')
+@app.route('/api/regis_face/select', methods=['POST'])
+def select_face():
+    student_id = request.form["student_id"]
+    image_id = request.form["image_id"]
+    
+    filename = "{}.png".format(image_id)
+    temp_img_path = os.path.join(IMG_PATH, "faces", student_id)
+    if(not os.path.isdir(temp_img_path)):
+        response = jsonify(success=False)
+        response.status_code = 400
+        return response
+
+    student_faces_path = os.path.join(FACES_IMG_ROOT_PATH, student_id)
+    source_path = os.path.join(temp_img_path, filename)
+    dest_path = os.path.join(FACES_IMG_ROOT_PATH, student_id, filename)
+    if(os.path.isfile(source_path)):
+        if(not os.path.isdir(student_faces_path)):
+            os.makedirs(student_faces_path)
+        os.rename(source_path, dest_path)
+        shutil.rmtree(temp_img_path)
+        response = jsonify(success=True)
+    else:
+        response = jsonify(success=False)
+        response.status_code = 400
+    return response
 
 @app.route('/')
 def main():
