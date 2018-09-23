@@ -17,12 +17,12 @@ def face_url(student_id, filename):
 @app.route('/api/predict', methods=['POST'])
 def predict():
     image_file = request.files["image"]
-    file_loc = os.path.join(IMG_PATH, uuid.uuid4())
+    file_loc = os.path.join(IMG_PATH, str(uuid.uuid4()))
     image_file.save(file_loc)
 
     img = cv2.imread(file_loc)
-    os.remove(file_loc)
     results = jsonify(prediction.predict_all(img))
+    os.remove(file_loc)
 
     return results
 
