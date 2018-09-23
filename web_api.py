@@ -11,7 +11,7 @@ IMG_PATH = os.path.abspath("./temps")
 FACES_IMG_ROOT_PATH = os.path.abspath("./faces")
 
 def face_url(student_id, filename):
-    temp_link = "/api/temp/faces/{student_id}/{filename}"
+    temp_link = "/api/predict/faces/temp/{student_id}/{filename}"
 
 
 @app.route('/api/predict', methods=['POST'])
@@ -26,7 +26,7 @@ def predict():
 
     return results
 
-@app.route('/api/regis_face', methods=['POST'])
+@app.route('/api/predict/faces/register', methods=['POST'])
 def regis_face():
     student_id = request.form['student_id']
     student_image = request.files['image']
@@ -57,7 +57,7 @@ def regis_face():
 
     return jsonify(temp_face_urls)
 
-@app.route('/api/temp/faces/<student_id>/<filename>')
+@app.route('/api/predict/faces/temp/<student_id>/<filename>')
 def temp_face(student_id, filename):
     image_path = os.path.join(IMG_PATH, "faces", student_id, filename)
     print(image_path)
@@ -67,7 +67,7 @@ def temp_face(student_id, filename):
     else:
         abort(404)
 
-@app.route('/api/regis_face/select', methods=['POST'])
+@app.route('/api/predict/faces/select', methods=['POST'])
 def select_face():
     student_id = request.form["student_id"]
     image_id = request.form["image_id"]
@@ -93,7 +93,7 @@ def select_face():
         response.status_code = 400
     return response
 
-@app.route('/')
+@app.route('/api/predict')
 def main():
     return "Hello Classnalytic!"
 
