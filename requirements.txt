@@ -9,3 +9,12 @@ scipy
 flask
 uwsgi
 pillow
+psutil
+argparse
+dill
+fire
+requests
+scikit-image
+slidingwindow
+tqdm
+git+https://github.com/ppwwyyxx/tensorpack.git
