@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/usr/local/bin/python3",
+    "python.pythonPath": "/home/phongsathron/anaconda3/bin/python",
     "git.ignoreLimitWarning": true,
     "python.linting.pylintEnabled": false
 }
