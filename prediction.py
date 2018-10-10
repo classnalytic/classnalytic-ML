@@ -9,6 +9,7 @@ import facenet.facenet as facenet
 import pickle
 import sklearn
 import emotion as em
+from action import action
 import os
 
 # Detect Face factor
@@ -147,6 +148,10 @@ def face_location(img, bounding_boxes=None):
         results += [result]
     return results
 
+def predict_action(img):
+    # print(action.action_classifie(img))
+    return action.action_classifie(img)
+
 def predict_all(img):
     results = []
     bounding_boxes, _ = align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
@@ -154,9 +159,17 @@ def predict_all(img):
     face_loc = face_location(img, bounding_boxes)
     face_reg = predict_face(img, bounding_boxes)
     face_emotion = predict_emotion(img, bounding_boxes)
+    actions = predict_action(img)
 
     for i in range(len(face_loc)):
         results += [{**face_loc[i], **face_reg[i], **face_emotion[i]}]
+    
+    for action in actions:
+        for result in results:
+            if result["face_location"][0] <= action["face_pos"][0] <= result["face_location"][2] and \
+                result["face_location"][1] <= action["face_pos"][1] <= result["face_location"][3]:
+
+                result["action"] = action["action"]
 
     print(results)
     return results
