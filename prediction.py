@@ -162,7 +162,7 @@ def predict_all(img):
     actions = predict_action(img)
 
     for i in range(len(face_loc)):
-        results += [{**face_loc[i], **face_reg[i], **face_emotion[i]}]
+        results += [{**{"id": i},**face_loc[i], **face_reg[i], **face_emotion[i]}]
     
     for action in actions:
         for result in results:
