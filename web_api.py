@@ -5,13 +5,25 @@ import numpy
 import uuid
 from flask import Flask, request, Response, jsonify, url_for, send_file, abort
 import prediction
+from web import app, model_train
 
-app = Flask(__name__)
+
 IMG_PATH = os.path.abspath("./temps")
 FACES_IMG_ROOT_PATH = os.path.abspath("./faces")
 
 def face_url(student_id, filename):
     temp_link = "/api/predict/faces/temp/{student_id}/{filename}"
+
+@app.route('/api/predict/test', methods=['GET'])
+def test_task():
+    result = model_train.apply_async()
+
+    return result.task_id
+
+@app.route("/api/predict/test/<task_id>")
+def show_result(task_id):
+    retval = model_train.AsyncResult(task_id).get(timeout=1.0)
+    return repr(retval)
 
 
 @app.route('/api/predict', methods=['POST'])
@@ -71,7 +83,7 @@ def temp_face(student_id, filename):
 def select_face():
     student_id = request.form["student_id"]
     image_id = request.form["image_id"]
-    
+
     filename = "{}.png".format(image_id)
     temp_img_path = os.path.join(IMG_PATH, "faces", student_id)
     if(not os.path.isdir(temp_img_path)):
