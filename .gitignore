@@ -6,3 +6,5 @@ emotion/images
 *.h5
 *.pyc
 models/facenet
+temps
+faces

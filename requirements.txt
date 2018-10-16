@@ -17,4 +17,6 @@ requests
 scikit-image
 slidingwindow
 tqdm
+celery
+redis
 git+https://github.com/ppwwyyxx/tensorpack.git
