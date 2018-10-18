@@ -22,8 +22,8 @@ def test_task():
 
 @app.route("/api/predict/test/<task_id>")
 def show_result(task_id):
-    retval = model_train.AsyncResult(task_id).get(timeout=1.0)
-    return repr(retval)
+    retval = model_train.AsyncResult(task_id).get(timeout=1.0, propagate=False)
+    return str(retval)
 
 
 @app.route('/api/predict', methods=['POST'])

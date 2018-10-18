@@ -14,7 +14,7 @@ import numpy as np
 import importlib
 import argparse
 import facenet
-import lfw
+import facenet.lfw
 import h5py
 import math
 import tensorflow.contrib.slim as slim
@@ -607,6 +607,7 @@ def parse_arguments(argv):
                         help='Concatenates embeddings for the image and its horizontally flipped counterpart.', action='store_true')
     parser.add_argument('--lfw_subtract_mean',
                         help='Subtract feature mean before calculating distance.', action='store_true')
+
     return parser.parse_args(argv)
 
 

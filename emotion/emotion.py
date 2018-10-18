@@ -7,11 +7,24 @@ from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import Conv2D
 from keras.layers.pooling import MaxPooling2D
 from keras import utils, optimizers, applications
+from keras import backend as k
 import tensorflow as tf
 
 global graph, model
 
 def resnet_model(class_num):
+    ###################################
+    # TensorFlow
+    config = tf.ConfigProto()
+
+    config.gpu_options.allow_growth = False
+
+    config.gpu_options.per_process_gpu_memory_fraction = 0.75
+
+    # Create a session with the above options specified.
+    k.tensorflow_backend.set_session(tf.Session(config=config))
+    ###################################
+
     model = Sequential()
     # model.add(applications.resnet50.ResNet50(weights='imagenet', include_top=False, input_tensor=Input(shape=(224, 224, 3), name='input')))
     model.add(applications.resnet50.ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3)))

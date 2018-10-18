@@ -1,16 +1,22 @@
 import cv2
 import numpy as np
+import tensorflow as tf
 # import sys
 # sys.path.insert(0, './action')
 
-# from tf_pose import common    
+# from tf_pose import common
 from tf_pose.estimator import TfPoseEstimator
 from tf_pose.networks import get_graph_path, model_wh
 
 w, h = 432, 368
-parts = ['nose', 'neck', 'r_shoulder', 'r_elbow', 'r_wrist', 'l_shoulder', 'l_elbow', 'l_wrist', 'r_hip', 'r_knee', 
+parts = ['nose', 'neck', 'r_shoulder', 'r_elbow', 'r_wrist', 'l_shoulder', 'l_elbow', 'l_wrist', 'r_hip', 'r_knee',
          'r_ankle', 'l_hip', 'l_knee', 'l_ankle', 'r_eye', 'l_eye', 'r_ear', 'l_ear']
-e = TfPoseEstimator(get_graph_path("mobilenet_thin"), target_size=(w, h))
+
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.75, allow_growth=False)
+
+tf_config = tf.ConfigProto(gpu_options=gpu_options, log_device_placement=False)
+
+e = TfPoseEstimator(get_graph_path("mobilenet_thin"), target_size=(w, h), tf_config=tf_config)
 
 def action_classifie(img):
     img_shape = img.shape
@@ -27,7 +33,7 @@ def action_classifie(img):
             body_part = human.body_parts[i]
             temp[parts[i]] = body_part
         bodys_pos += [temp]
-    
+
     return is_handup(bodys_pos, img_shape)
 
 def is_handup(bodys_pos, img_shape):

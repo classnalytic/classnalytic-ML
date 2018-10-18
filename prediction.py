@@ -21,7 +21,7 @@ print('Creating networks and loading parameters')
 
 with tf.Graph().as_default():
     gpu_options = tf.GPUOptions(
-        per_process_gpu_memory_fraction=0, allow_growth=True)
+        per_process_gpu_memory_fraction=0.75, allow_growth=True)
     tf_config = tf.ConfigProto(
         gpu_options=gpu_options, log_device_placement=False)
     sess = tf.Session(config=tf_config)
@@ -163,7 +163,7 @@ def predict_all(img):
 
     for i in range(len(face_loc)):
         results += [{**{"id": i},**face_loc[i], **face_reg[i], **face_emotion[i]}]
-    
+
     for action in actions:
         for result in results:
             if result["face_location"][0] <= action["face_pos"][0] <= result["face_location"][2] and \
