@@ -12,7 +12,7 @@ w, h = 432, 368
 parts = ['nose', 'neck', 'r_shoulder', 'r_elbow', 'r_wrist', 'l_shoulder', 'l_elbow', 'l_wrist', 'r_hip', 'r_knee',
          'r_ankle', 'l_hip', 'l_knee', 'l_ankle', 'r_eye', 'l_eye', 'r_ear', 'l_ear']
 
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.75, allow_growth=False)
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.75, allow_growth=True)
 
 tf_config = tf.ConfigProto(gpu_options=gpu_options, log_device_placement=False)
 

@@ -14,10 +14,12 @@ import math
 import pickle
 from sklearn.svm import SVC
 
-def main(args):
+def main(args, self):
+
+    self.update_state(state='PROGRESS')
 
     with tf.Graph().as_default():
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.25)
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.25, allow_growth = True)
         with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
 
             np.random.seed(seed=args.seed)
@@ -98,6 +100,9 @@ def main(args):
 
                 accuracy = np.mean(np.equal(best_class_indices, labels))
                 print('Accuracy: %.3f' % accuracy)
+
+            sess.close()
+
 
 
 def split_dataset(dataset, min_nrof_images_per_class, nrof_train_images_per_class):

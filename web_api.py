@@ -22,8 +22,24 @@ def test_task():
 
 @app.route("/api/predict/test/<task_id>")
 def show_result(task_id):
-    retval = model_train.AsyncResult(task_id).get(timeout=1.0, propagate=False)
-    return str(retval)
+    task = model_train.AsyncResult(task_id)
+
+    if task.state == 'PENDING':
+        # job did not start yet
+        response = {
+            'state': task.state,
+        }
+    elif task.state != 'FAILURE':
+        response = {
+            'state': task.state,
+        }
+    else:
+        # something went wrong in the background job
+        response = {
+            'state': task.state,
+            'status': str(task.info),  # this is the exception raised
+        }
+    return jsonify(response)
 
 
 @app.route('/api/predict', methods=['POST'])

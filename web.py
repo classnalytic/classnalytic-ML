@@ -27,8 +27,8 @@ def make_celery(app):
 
 celery = make_celery(app)
 
-@celery.task(name='classnalytic.model_train')
-def model_train():
+@celery.task(name='classnalytic.model_train', bind=True)
+def model_train(self):
     args = classifier.parse_arguments(['TRAIN', '/home/wiput/classalytic/faces', '/home/wiput/classalytic/models/facenet/20180402-114759/20180402-114759.pb', '/home/wiput/classalytic/models/facenet/20180402-114759/lfw_classifier.pkl', '--batch_size', '1000', '--min_nrof_images_per_class', '40', '--nrof_train_images_per_class', '35'])
-    classifier.main(args)
+    classifier.main(args, self)
     return "Completed!"
