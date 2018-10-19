@@ -43,6 +43,11 @@ classifier_filename_exp = os.path.abspath("./models/facenet/20180402-114759/lfw_
 with open(classifier_filename_exp, 'rb') as infile:
     (model, class_names) = pickle.load(infile)
 
+def load_facenet_model():
+    classifier_filename_exp = os.path.abspath("./models/facenet/20180402-114759/lfw_classifier.pkl")
+    with open(classifier_filename_exp, 'rb') as infile:
+        (model, class_names) = pickle.load(infile)
+
 def crop_and_resize(image, position, size):
     """ Crop Function take path, x1, y1, x2, y2 then give back cropped photo """
     posx1, posy1, posx2, posy2 = position

@@ -62,6 +62,7 @@ def train_status():
             'ready' : True,
             'task' : task_id.decode('utf-8')
         }
+        prediction.load_facenet_model()
 
     return jsonify(response)
 

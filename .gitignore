@@ -8,3 +8,5 @@ emotion/images
 models/facenet
 temps
 faces
+*.pdf
+*.code2pdf
