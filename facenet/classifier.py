@@ -16,7 +16,7 @@ from sklearn.svm import SVC
 
 def main(args, self):
 
-    self.update_state(state='PROGRESS')
+    self.update_state(state='RUNNING')
 
     with tf.Graph().as_default():
         gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.25, allow_growth = True)
