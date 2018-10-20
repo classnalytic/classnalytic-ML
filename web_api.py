@@ -44,6 +44,12 @@ def train_task():
     return jsonify(response)
 
 
+@app.route('/api/predict/train/reload', methods=['POST'])
+def model_reload():
+    prediction.load_facenet_model()
+    return jsonify({'success': True})
+
+
 @app.route('/api/predict/train/status', methods=['POST'])
 def train_status():
     r = redis.StrictRedis(host='localhost', port=6379, db=0)
@@ -55,12 +61,14 @@ def train_status():
     if task.state == 'PENDING' or task.state == 'RUNNING':
         response = {
             'ready' : False,
-            'task' : task_id.decode('utf-8')
+            'task' : task_id.decode('utf-8'),
+            'state': task.state
         }
     else:
         response = {
             'ready' : True,
-            'task' : task_id.decode('utf-8')
+            'task' : task_id.decode('utf-8'),
+            'state': task.state
         }
         prediction.load_facenet_model()
 
