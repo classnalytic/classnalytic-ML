@@ -21,7 +21,7 @@ print('Creating networks and loading parameters')
 
 with tf.Graph().as_default():
     gpu_options = tf.GPUOptions(
-        per_process_gpu_memory_fraction=0, allow_growth=True)
+        per_process_gpu_memory_fraction=0.75, allow_growth=True)
     tf_config = tf.ConfigProto(
         gpu_options=gpu_options, log_device_placement=False)
     sess = tf.Session(config=tf_config)
@@ -42,6 +42,11 @@ emotion.load_weights("models/emotion/emotion.h5")
 classifier_filename_exp = os.path.abspath("./models/facenet/20180402-114759/lfw_classifier.pkl")
 with open(classifier_filename_exp, 'rb') as infile:
     (model, class_names) = pickle.load(infile)
+
+def load_facenet_model():
+    classifier_filename_exp = os.path.abspath("./models/facenet/20180402-114759/lfw_classifier.pkl")
+    with open(classifier_filename_exp, 'rb') as infile:
+        (model, class_names) = pickle.load(infile)
 
 def crop_and_resize(image, position, size):
     """ Crop Function take path, x1, y1, x2, y2 then give back cropped photo """
@@ -96,11 +101,9 @@ def predict_face(img, bounding_boxes=None, margin=44, image_size=(160, 160)):
         if best_class_probabilities[index] > 0.75:
             result["accuracy"] = best_class_probabilities[index]
             result["name"] = class_names[best_class_indices[0]]
-            print("results => %s" %class_names[best_class_indices[0]])
         else:
             result["accuracy"] = "null"
-            result["name"] = "Unknown"
-            print("Unknown")
+            result["name"] = "Unknown"]
 
         index += 1
 
@@ -149,7 +152,6 @@ def face_location(img, bounding_boxes=None):
     return results
 
 def predict_action(img):
-    # print(action.action_classifie(img))
     return action.action_classifie(img)
 
 def predict_all(img):
@@ -163,13 +165,13 @@ def predict_all(img):
 
     for i in range(len(face_loc)):
         results += [{**{"id": i},**face_loc[i], **face_reg[i], **face_emotion[i]}]
-    
+
     for action in actions:
         for result in results:
             if result["face_location"][0] <= action["face_pos"][0] <= result["face_location"][2] and \
                 result["face_location"][1] <= action["face_pos"][1] <= result["face_location"][3]:
 
                 result["action"] = action["action"]
+                result["body_path"] = action["body_path"]
 
-    print(results)
     return results

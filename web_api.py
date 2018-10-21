@@ -6,6 +6,8 @@ import uuid
 from flask import Flask, request, Response, jsonify, url_for, send_file, abort
 import prediction
 from web import app, model_train
+import redis
+from importlib import reload
 
 
 IMG_PATH = os.path.abspath("./temps")
@@ -14,16 +16,86 @@ FACES_IMG_ROOT_PATH = os.path.abspath("./faces")
 def face_url(student_id, filename):
     temp_link = "/api/predict/faces/temp/{student_id}/{filename}"
 
-@app.route('/api/predict/test', methods=['GET'])
-def test_task():
-    result = model_train.apply_async()
+@app.route('/api/predict/train', methods=['POST'])
+def train_task():
+    r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
-    return result.task_id
+    task_id = r.get('current_job')
 
-@app.route("/api/predict/test/<task_id>")
+    task = model_train.AsyncResult(task_id)
+
+    if task.state == 'PENDING' or task.state == 'RUNNING':
+        response = {
+            'ready' : False,
+            'task': task_id.decode('utf-8'),
+            'state': task.state
+
+        }
+    else:
+        result = model_train.apply_async()
+
+        response = {
+            'ready' : False,
+            'task': 'RUNNING',
+            'state': result.state
+        }
+
+        r.set('current_job', result.task_id)
+
+    return jsonify(response)
+
+
+@app.route('/api/predict/train/reload', methods=['POST'])
+def model_reload():
+    reload(prediction)
+    return jsonify({'success': True})
+
+
+@app.route('/api/predict/train/status', methods=['POST'])
+def train_status():
+    r = redis.StrictRedis(host='localhost', port=6379, db=0)
+
+    task_id = r.get('current_job')
+
+    task = model_train.AsyncResult(task_id)
+
+    if task.state == 'PENDING' or task.state == 'RUNNING':
+        response = {
+            'ready' : False,
+            'task' : task_id.decode('utf-8'),
+            'state': task.state
+        }
+    else:
+        response = {
+            'ready' : True,
+            'task' : task_id.decode('utf-8'),
+            'state': task.state
+        }
+        prediction.load_facenet_model()
+
+    return jsonify(response)
+
+
+@app.route("/api/predict/train/<task_id>", methods=['POST'])
 def show_result(task_id):
-    retval = model_train.AsyncResult(task_id).get(timeout=1.0)
-    return repr(retval)
+    task = model_train.AsyncResult(task_id)
+
+    if task.state == 'PENDING':
+        # job did not start yet
+        response = {
+            'state': task.state,
+        }
+    elif task.state != 'FAILURE':
+        response = {
+            'state': task.state,
+        }
+    else:
+        # something went wrong in the background job
+        response = {
+            'state': task.state,
+            'status': str(task.info),  # this is the exception raised
+        }
+    return jsonify(response)
 
 
 @app.route('/api/predict', methods=['POST'])
