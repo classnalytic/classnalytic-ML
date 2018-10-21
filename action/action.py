@@ -55,6 +55,21 @@ def is_handup(bodys_pos, img_shape):
                     "action" : "Hand up"
                 }
 
+        elif 'r_elbow' in body_pos and 'r_shoulder' in body_pos:
+            if body_pos["r_elbow"].y <= body_pos['r_shoulder'].y:
+                temp = {
+                    "face_pos": (body_pos['nose'].x * img_shape[1] + 0.5, body_pos['nose'].y * img_shape[0] + 0.5),
+                    "action" : "Hand up"
+                }
+
+        elif 'l_elbow' in body_pos and 'l_shoulder' in body_pos:
+            if body_pos["l_elbow"].y <= body_pos['l_shoulder'].y:
+                temp = {
+                    "face_pos": (body_pos['nose'].x * img_shape[1] + 0.5, body_pos['nose'].y * img_shape[0] + 0.5),
+                    "action" : "Hand up"
+                }
+
+
         if temp is not None:
             result += [temp]
 
