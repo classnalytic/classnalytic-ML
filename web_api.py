@@ -7,6 +7,7 @@ from flask import Flask, request, Response, jsonify, url_for, send_file, abort
 import prediction
 from web import app, model_train
 import redis
+from importlib import reload
 
 
 IMG_PATH = os.path.abspath("./temps")
@@ -34,8 +35,8 @@ def train_task():
         result = model_train.apply_async()
 
         response = {
-            'ready' : True,
-            'task': result.task_id,
+            'ready' : False,
+            'task': 'RUNNING',
             'state': result.state
         }
 
@@ -46,7 +47,7 @@ def train_task():
 
 @app.route('/api/predict/train/reload', methods=['POST'])
 def model_reload():
-    prediction.load_facenet_model()
+    reload(prediction)
     return jsonify({'success': True})
 
 
