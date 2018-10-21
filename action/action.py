@@ -38,7 +38,6 @@ def action_classifie(img):
 
 def is_handup(bodys_pos, img_shape):
     result = []
-    print(len(bodys_pos))
     for body_pos in bodys_pos:
         temp = None
         if 'r_wrist' in body_pos and 'r_shoulder' in body_pos:
@@ -48,30 +47,41 @@ def is_handup(bodys_pos, img_shape):
                     "action" : "Hand up"
                 }
 
-        elif 'l_wrist' in body_pos and 'l_shoulder' in body_pos:
+        if 'l_wrist' in body_pos and 'l_shoulder' in body_pos:
             if body_pos["l_wrist"].y <= body_pos['l_shoulder'].y:
                 temp = {
                     "face_pos": (body_pos['nose'].x * img_shape[1] + 0.5, body_pos['nose'].y * img_shape[0] + 0.5),
                     "action" : "Hand up"
                 }
 
-        elif 'r_elbow' in body_pos and 'r_shoulder' in body_pos:
+        if 'r_elbow' in body_pos and 'r_shoulder' in body_pos:
             if body_pos["r_elbow"].y <= body_pos['r_shoulder'].y:
                 temp = {
                     "face_pos": (body_pos['nose'].x * img_shape[1] + 0.5, body_pos['nose'].y * img_shape[0] + 0.5),
                     "action" : "Hand up"
                 }
 
-        elif 'l_elbow' in body_pos and 'l_shoulder' in body_pos:
+        if 'l_elbow' in body_pos and 'l_shoulder' in body_pos:
             if body_pos["l_elbow"].y <= body_pos['l_shoulder'].y:
                 temp = {
                     "face_pos": (body_pos['nose'].x * img_shape[1] + 0.5, body_pos['nose'].y * img_shape[0] + 0.5),
                     "action" : "Hand up"
                 }
 
-
+        temp2 = {}
+        for i in body_pos.keys():
+            pos = body_pos[i]
+            temp2[i] = [pos.x, pos.y]
+        
+        
         if temp is not None:
-            result += [temp]
-
-    print(result)
+            result += [{**temp, "body_path": temp2}]
+        else:
+            result += [
+                {
+                    "face_pos": (body_pos['nose'].x * img_shape[1] + 0.5, body_pos['nose'].y * img_shape[0] + 0.5),
+                    "action" : "null",
+                    "body_path": temp2
+                }
+            
     return result

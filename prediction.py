@@ -101,11 +101,9 @@ def predict_face(img, bounding_boxes=None, margin=44, image_size=(160, 160)):
         if best_class_probabilities[index] > 0.75:
             result["accuracy"] = best_class_probabilities[index]
             result["name"] = class_names[best_class_indices[0]]
-            print("results => %s" %class_names[best_class_indices[0]])
         else:
             result["accuracy"] = "null"
-            result["name"] = "Unknown"
-            print("Unknown")
+            result["name"] = "Unknown"]
 
         index += 1
 
@@ -154,7 +152,6 @@ def face_location(img, bounding_boxes=None):
     return results
 
 def predict_action(img):
-    # print(action.action_classifie(img))
     return action.action_classifie(img)
 
 def predict_all(img):
@@ -175,6 +172,6 @@ def predict_all(img):
                 result["face_location"][1] <= action["face_pos"][1] <= result["face_location"][3]:
 
                 result["action"] = action["action"]
+                result["body_path"] = action["body_path"]
 
-    print(results)
     return results
