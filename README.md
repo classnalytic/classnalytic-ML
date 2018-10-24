@@ -1,0 +1,7 @@
+# classnalytic-ML
+Repository of Classnalytic Machine Learning API contain Face Recognition, Emotion Recognition and Action classification systems. using [MTCNN](https://kpzhang93.github.io/MTCNN_face_detection_alignment/index.html) for face detection and alignment. CNN for recognize face and classifying emotions. For the action classifying we use [tf-pose-estimation](https://github.com/ildoonet/tf-pose-estimation) that implements [Openpose](https://github.com/CMU-Perceptual-Computing-Lab/openpose) to use Tensorflow. It uses get the joints of human body for classifying human actions. For web system visit [classnalytic-web](https://github.com/wiput1999/classnalytic-web) repository.
+
+# About Classnalytic
+## Introduction
+Analysis of students's behaviour is important for instructors because it is one of feedbacks from students that let the instructors to understand their students. This can enable the instructors to be able to improve their teaching methods or materials. Examples of Tracking students' behaviour in the class are emotion, attendance, and action. Currently, it is very difficult and  laborious to observe these behaviours when there are a large number of students in a class. Therefore, we propose a system called "Classnalytic" to assist instructors to track students' behaviour in their class. The proposed system utilises computer vision and machine learning techniques to tackle the problem.
+
