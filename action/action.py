@@ -39,7 +39,11 @@ def action_classifie(img):
 def is_handup(bodys_pos, img_shape):
     result = []
     for body_pos in bodys_pos:
+        print(body_pos)
         temp = None
+        if 'nose' not in body_pos:
+            continue
+
         if 'r_wrist' in body_pos and 'r_shoulder' in body_pos:
             if body_pos["r_wrist"].y <= body_pos['r_shoulder'].y:
                 temp = {

@@ -29,7 +29,6 @@ def train_task():
             'ready' : False,
             'task': task_id.decode('utf-8'),
             'state': task.state
-
         }
     else:
         result = model_train.apply_async()
