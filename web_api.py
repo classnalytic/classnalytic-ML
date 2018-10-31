@@ -41,6 +41,17 @@ def train_task():
 
         r.set('current_job', result.task_id)
 
+    if task_id.decode('utf-8') == '':
+        result = model_train.apply_async()
+
+        response = {
+            'ready' : False,
+            'task': 'RUNNING',
+            'state': result.state
+        }
+
+        r.set('current_job', result.task_id)
+
     return jsonify(response)
 
 
@@ -71,6 +82,9 @@ def train_status():
             'state': task.state
         }
         prediction.load_facenet_model()
+
+    if task_id.decode('utf-8') == "":
+        response['ready'] = True
 
     return jsonify(response)
 
