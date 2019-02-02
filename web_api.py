@@ -8,7 +8,9 @@ import prediction
 from web import app, model_train
 import redis
 from importlib import reload
+from flask_socketio import SocketIO, emit
 
+socketio = SocketIO(app, path="/api/predict/socket")
 
 IMG_PATH = os.path.abspath("./temps")
 FACES_IMG_ROOT_PATH = os.path.abspath("./faces")
@@ -87,6 +89,13 @@ def train_status():
         response['ready'] = True
 
     return jsonify(response)
+
+@app.route("/api/predict/train/reset", methods=['post'])
+def reset_task():
+    r = redis.StrictRedis(host='localhost', port=6379, db=0)
+    r.set('current_job', '')
+
+    return jsonify({'success': True})
 
 
 @app.route("/api/predict/train/<task_id>", methods=['POST'])
@@ -189,6 +198,14 @@ def select_face():
         response = jsonify(success=False)
         response.status_code = 400
     return response
+
+@socketio.on('connect')
+def test_connect():
+    emit('message', {'data': 'Connected'})
+
+@socketio.on('message')
+def handle_message(message):
+    print('received message: ' + message)
 
 @app.route('/api/predict')
 def main():

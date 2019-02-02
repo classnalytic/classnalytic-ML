@@ -1,4 +1,4 @@
-from web_api import app
+from web_api import app, socketio
 
 if __name__ == "__main__":
-    app.run()
+    socketio.run(app)

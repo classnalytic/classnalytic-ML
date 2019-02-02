@@ -10,3 +10,4 @@ temps
 faces
 *.pdf
 *.code2pdf
+.vscode
