@@ -39,7 +39,7 @@ def action_classifie(img):
 def is_handup(bodys_pos, img_shape):
     result = []
     for body_pos in bodys_pos:
-        print(body_pos)
+        # print(body_pos)
         temp = None
         if 'nose' not in body_pos:
             continue
@@ -76,8 +76,8 @@ def is_handup(bodys_pos, img_shape):
         for i in body_pos.keys():
             pos = body_pos[i]
             temp2[i] = [pos.x, pos.y]
-        
-        
+
+
         if temp is not None:
             result += [{**temp, "body_path": temp2}]
         else:
@@ -87,5 +87,6 @@ def is_handup(bodys_pos, img_shape):
                     "action" : "null",
                     "body_path": temp2
                 }
-            
+            ]
+
     return result

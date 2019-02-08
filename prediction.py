@@ -103,7 +103,7 @@ def predict_face(img, bounding_boxes=None, margin=44, image_size=(160, 160)):
             result["name"] = class_names[best_class_indices[0]]
         else:
             result["accuracy"] = "null"
-            result["name"] = "Unknown"]
+            result["name"] = ["Unknown"]
 
         index += 1
 

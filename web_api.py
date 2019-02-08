@@ -1,6 +1,10 @@
 import cv2
+from PIL import Image
 import os
+import io
+from io import BytesIO
 import shutil
+import base64
 import numpy
 import uuid
 from flask import Flask, request, Response, jsonify, url_for, send_file, abort
@@ -8,7 +12,7 @@ import prediction
 from web import app, model_train
 import redis
 from importlib import reload
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, send
 
 socketio = SocketIO(app, path="/api/predict/socket")
 
@@ -199,13 +203,38 @@ def select_face():
         response.status_code = 400
     return response
 
-@socketio.on('connect')
-def test_connect():
-    emit('message', {'data': 'Connected'})
-
 @socketio.on('message')
 def handle_message(message):
-    print('received message: ' + message)
+    emit('response', 'Test')
+
+@socketio.on('predict', namespace='/predict')
+def handle_predict(image):
+
+    # Decode base64
+    imgdata = base64.b64decode(str(image))
+    image = Image.open(io.BytesIO(imgdata))
+
+    image_file = cv2.cvtColor(numpy.array(image), cv2.COLOR_BGR2RGB)
+
+    # file_loc = os.path.join(IMG_PATH, str(uuid.uuid4()))
+    # image_file.save(file_loc)
+
+    # img = cv2.imread(file_loc)
+    # Process result
+    results = prediction.predict_all(image_file)
+    # os.remove(file_loc)
+
+    # Reverse color back
+    image_file = cv2.cvtColor(image_file, cv2.COLOR_BGR2RGB)
+
+    # Encode to base64
+    pil_img = Image.fromarray(image_file)
+    buff = BytesIO()
+    pil_img.save(buff, format="JPEG")
+    image = base64.b64encode(buff.getvalue()).decode("utf-8")
+
+    emit('video', image)
+    emit('result', results)
 
 @app.route('/api/predict')
 def main():

@@ -55,7 +55,7 @@ class Emotion:
             model_predict = self.model.predict([face])
             result = {}
             for i in model_predict[0].argsort()[::-1]:
-                print(' {:.5f} {}'.format(model_predict[0][i], self.labels[i]))
+                # print(' {:.5f} {}'.format(model_predict[0][i], self.labels[i]))
                 result[self.labels[i]] = float("{:.8f}".format(model_predict[0][i]))
 
         return result
